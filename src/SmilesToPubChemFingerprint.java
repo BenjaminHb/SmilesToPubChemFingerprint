@@ -24,11 +24,11 @@ public class SmilesToPubChemFingerprint {
             fingerprint = fprinter.getBitFingerprint(atomContainer);
         } catch (InvalidSmilesException e) {
             System.err.println(e.getMessage());
-            System.exit(1);
+            // System.exit(1);
         } catch (CDKException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
-            System.exit(1);
+            // System.exit(1);
         }
     }
 
@@ -38,14 +38,19 @@ public class SmilesToPubChemFingerprint {
 
     protected String getFingerprintBitSetString(){
         StringBuffer stringBuffer = new StringBuffer();
-        int[] setBitArray = fingerprint.getSetbits();
-        stringBuffer.append('[');
-        for (int i = 0; i < setBitArray.length; i++) {
-            stringBuffer.append(setBitArray[i]);
-            if (i + 1 !=setBitArray.length) stringBuffer.append(", ");
+        try {
+            int[] setBitArray = fingerprint.getSetbits();
+            stringBuffer.append('[');
+            for (int i = 0; i < setBitArray.length; i++) {
+                stringBuffer.append(setBitArray[i]);
+                if (i + 1 != setBitArray.length) stringBuffer.append(", ");
+            }
+            stringBuffer.append(']');
+            return stringBuffer.toString();
         }
-        stringBuffer.append(']');
-        return stringBuffer.toString();
+        catch (NullPointerException e){
+            return "";
+        }
     }
 
     protected String getFingerPrintBitString(){

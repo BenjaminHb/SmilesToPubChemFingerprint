@@ -1,12 +1,13 @@
 import java.io.*;
+import java.util.Scanner;
 
 /**
  * Created by benjaminzhang on 12/07/2017.
  * Copyright © benjaminzhang 2017.
  */
 public class Main {
-    private String readFileName = new String("/Users/benjaminzhang/Downloads/Smile3.txt");
-    private String writeFileName = new String("/Users/benjaminzhang/Downloads/PubChemFingerprint2.txt");
+    private String readFileName;
+    private String writeFileName;
     private StringBuffer stringBuffer = new StringBuffer();
 
     public void Run(){
@@ -19,12 +20,13 @@ public class Main {
             reader = new InputStreamReader(new FileInputStream(file));
             int tempchar;
             int singleQuoteMark = 0;
+            int count = 0;
             writeFileFromFileEnd("[");
             while ((tempchar = reader.read()) != -1) {
                 // 对于windows下，rn这两个字符在一起时，表示一个换行。但如果这两个字符分开显示时，会换两次行。
                 // 因此，屏蔽掉r，或者屏蔽n。否则，将会多出很多空行。
                 if (((char) tempchar) != 'r' && (char) tempchar != ',' && (char) tempchar != ' ') {
-                    System.out.print("Reading...");
+                    // System.out.print("Reading...");
                     if ((char) tempchar == '\'')    singleQuoteMark++;
                     else    stringBuffer.append((char) tempchar);
                     if (singleQuoteMark == 2) {
@@ -32,7 +34,7 @@ public class Main {
                         SmilesToPubChemFingerprint smilesToPubChemFingerprint = new SmilesToPubChemFingerprint(stringBuffer.toString());
                         writeFileFromFileEnd(smilesToPubChemFingerprint.getFingerprintBitSetString()+", ");
                         stringBuffer.delete(0,stringBuffer.length());
-                        System.out.println("\nreadFileStatus = true");
+                        System.out.println("\nreadFileStatus = true "+count++);
                     }
                 }
             }
@@ -63,6 +65,10 @@ public class Main {
 
     public static void main(String[] args) {
         Main main = new Main();
+        System.out.println("Please input read file pathname:");
+        main.readFileName = new Scanner(System.in).nextLine();
+        System.out.println("Please input write file pathname:");
+        main.writeFileName = new Scanner(System.in).nextLine();
         main.Run();
     }
 }
