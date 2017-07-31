@@ -8,11 +8,13 @@ import java.util.Scanner;
 public class Main {
     private String readFileName;
     private String writeFileName;
+    private String errorFileName;
     private StringBuffer stringBuffer = new StringBuffer();
 
-    public void Run(){
+    protected void Run() {
         File file = new File(readFileName);
         Reader reader = null;
+        WriteFiles writeFiles = new WriteFiles(writeFileName);
 
         try {
             //System.out.println("以字符为单位读取文件内容，一次读一个字节：");
@@ -21,54 +23,54 @@ public class Main {
             int tempchar;
             int singleQuoteMark = 0;
             int count = 0;
-            writeFileFromFileEnd("[");
+            writeFiles.writeFileFromFileEnd("[");
             while ((tempchar = reader.read()) != -1) {
                 // 对于windows下，rn这两个字符在一起时，表示一个换行。但如果这两个字符分开显示时，会换两次行。
                 // 因此，屏蔽掉r，或者屏蔽n。否则，将会多出很多空行。
                 if (((char) tempchar) != 'r' && (char) tempchar != ',' && (char) tempchar != ' ') {
                     // System.out.print("Reading...");
-                    if ((char) tempchar == '\'')    singleQuoteMark++;
-                    else    stringBuffer.append((char) tempchar);
+                    if ((char) tempchar == '\'') singleQuoteMark++;
+                    else stringBuffer.append((char) tempchar);
                     if (singleQuoteMark == 2) {
                         singleQuoteMark = 0;
-                        SmilesToPubChemFingerprint smilesToPubChemFingerprint = new SmilesToPubChemFingerprint(stringBuffer.toString());
-                        writeFileFromFileEnd(smilesToPubChemFingerprint.getFingerprintBitSetString()+", ");
-                        stringBuffer.delete(0,stringBuffer.length());
-                        System.out.println("\nreadFileStatus = true "+count++);
+                        SmilesToPubChemFingerprint smilesToPubChemFingerprint = new SmilesToPubChemFingerprint(errorFileName, stringBuffer.toString());
+                        writeFiles.writeFileFromFileEnd(smilesToPubChemFingerprint.getFingerprintBitSetString() + ", ");
+                        stringBuffer.delete(0, stringBuffer.length());
+                        System.out.println("\nreadFileStatus = true " + count++);
                     }
                 }
             }
             reader.close();
-            writeFileFromFileEnd("]");
+            writeFiles.writeFileFromFileEnd("]");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * 追加文件尾部：使用RandomAccessFile
-     */
-    protected void writeFileFromFileEnd(String content) {
-        try {
-            // 打开一个随机访问文件流，按读写方式
-            RandomAccessFile randomFile = new RandomAccessFile(writeFileName, "rw");
-            // 文件长度，字节数
-            long fileLength = randomFile.length();
-            // 将写文件指针移到文件尾
-            randomFile.seek(fileLength);
-            randomFile.writeBytes(content);
-            randomFile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void fileNameProcess(String readFileName) {
+        String pathNameTemp = "";
+        String fileName = "";
+        if (readFileName.contains("\\")) {
+            pathNameTemp = readFileName.substring(0, readFileName.lastIndexOf('\\') + 1);
+            fileName = readFileName.substring(readFileName.lastIndexOf('\\') + 1);
+        } else if (readFileName.contains("/")) {
+            pathNameTemp = readFileName.substring(0, readFileName.lastIndexOf('/') + 1);
+            fileName = readFileName.substring(readFileName.lastIndexOf('/') + 1);
         }
+        if (fileName.contains(".")) {
+            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        }
+        writeFileName = pathNameTemp + "OUT_PubChemFingerprint_" + fileName + ".txt";
+        errorFileName = pathNameTemp + "ERROR_PubChemFingerprint_" + fileName + ".txt";
     }
 
     public static void main(String[] args) {
         Main main = new Main();
         System.out.println("Please input read file pathname:");
         main.readFileName = new Scanner(System.in).nextLine();
-        System.out.println("Please input write file pathname:");
-        main.writeFileName = new Scanner(System.in).nextLine();
+        main.fileNameProcess(main.readFileName);
+        System.out.println("Output file name:\n"+main.writeFileName);
+        System.out.println("Errors occur during processing are saved into file:\n"+main.errorFileName);
         main.Run();
     }
 }
