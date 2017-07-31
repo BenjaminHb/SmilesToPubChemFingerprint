@@ -4,7 +4,6 @@ import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fingerprint.IBitFingerprint;
 import org.openscience.cdk.fingerprint.PubchemFingerprinter;
 import org.openscience.cdk.interfaces.*;
-import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 
 import java.util.BitSet;
@@ -17,15 +16,19 @@ public class SmilesToPubChemFingerprint {
     private PubchemFingerprinter fprinter = new PubchemFingerprinter(DefaultChemObjectBuilder.getInstance());
     private IBitFingerprint fingerprint;
 
-    protected SmilesToPubChemFingerprint(String smiles){
+    protected SmilesToPubChemFingerprint(String errorFileName, String smiles){
         try {
-            SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+            SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
             IAtomContainer atomContainer = smilesParser.parseSmiles(smiles);
             fingerprint = fprinter.getBitFingerprint(atomContainer);
         } catch (InvalidSmilesException e) {
+            WriteFiles writeFiles = new WriteFiles(errorFileName);
+            writeFiles.writeFileFromFileEnd(e.getMessage()+"\n\n");
             System.err.println(e.getMessage());
             // System.exit(1);
         } catch (CDKException e) {
+            WriteFiles writeFiles = new WriteFiles(errorFileName);
+            writeFiles.writeFileFromFileEnd(e.getMessage()+"\n\n");
             System.err.println(e.getMessage());
             e.printStackTrace();
             // System.exit(1);
@@ -49,7 +52,7 @@ public class SmilesToPubChemFingerprint {
             return stringBuffer.toString();
         }
         catch (NullPointerException e){
-            return "";
+            return "[]";
         }
     }
 
